@@ -1,4 +1,5 @@
-﻿#include <iostream>
+﻿
+#include <iostream>
 #include <Windows.h>
 #include <stdio.h>
 #include <conio.h>
@@ -6,13 +7,11 @@
 #include "tchar.h"
 #include <atlstr.h>
 #include <regex>
-
+#include "atlconv.h" 
 
 using namespace std;
 
 typedef double (*function)(double a, double b);
-
-__declspec(dllimport) double func(double a, double b);
 
 std::wstring s2ws(const std::string& s)
 {
@@ -26,31 +25,160 @@ std::wstring s2ws(const std::string& s)
     return r;
 }
 
+bool wayDllInReg() {
+    setlocale(LC_ALL, ("Russian"));
+    HKEY hKey;
+    TCHAR Reget[256] = { 0 };
+    DWORD RegetPath = sizeof(Reget);
+    TCHAR chekDll();
+    bool toCreate(TCHAR fileDll[64]);
+
+    //Поиск DLL
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\lab", 0, KEY_ALL_ACCESS, &hKey) != ERROR_SUCCESS) {
+        cout << " Папка не найдена";
+    }
+    else
+    {
+        if ((RegQueryValueEx(hKey, TEXT("String Value"), NULL, NULL, (LPBYTE)&Reget, &RegetPath)) == ERROR_SUCCESS)
+        {
+            return true;
+        }
+        else 
+        {
+            return false;
+        }
+    }
+    RegCloseKey(hKey);
+}
+
+void getWayDllFromReg() {
+  
+
+    TCHAR fileDll[64];
+    HKEY hKey;
+    DWORD dwDisposition;
+    char strt[256];
+    TCHAR Reget[256] = { 0 };
+    DWORD RegetPath = sizeof(Reget);
+    TCHAR chekDll();
+    bool toCreate(TCHAR fileDll[64]);
+
+    //Ишем папку
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\lab", 0, KEY_ALL_ACCESS, &hKey) != ERROR_SUCCESS) {
+        cout << " Папка не найдена";
+    }
+    else
+    {
+        //Проверяем файл
+        if ((RegQueryValueEx(hKey, TEXT("Way to Dll"), NULL, NULL, (LPBYTE)&Reget, &RegetPath)) == ERROR_SUCCESS)
+        {
+            //ВЫвод пути
+          //  return Reget;
+        }
+        
+    }
+    RegCloseKey(hKey);
+}
+
+void setWayToDll(string Way) {
+  
+    TCHAR fileDll[64];
+    HKEY hKey;
+    DWORD dwDisposition;
+    
+    char strt[256];
+      
+    for (int i = 0; i < Way.size(); i++) {
+        strt[i] = Way[i];
+    }
+
+    TCHAR Reget[256] = { 0 };
+    DWORD RegetPath = sizeof(Reget);
+    TCHAR chekDll();
+    bool toCreate(TCHAR fileDll[64]);
+
+    //Поиск DLL и ввод если нет
+    if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\lab", 0, KEY_ALL_ACCESS, &hKey) != ERROR_SUCCESS) {
+       
+    }
+    else
+    {
+            if (RegSetValueEx(hKey, TEXT("String Value"), NULL, REG_SZ, (BYTE*)strt, strlen(strt)) == ERROR_SUCCESS)
+            {
+                cout << "путь записан";
+            } 
+        }
+ 
+    RegCloseKey(hKey);
+}
 
 int main()
 {
-    
-   setlocale(LC_ALL, "Russian");
+     //D:\YandexDisk\C++\oc_lab2_static\oc_lab2_static\Dll3.dll
+
+    setlocale(LC_ALL, "Russian");
     LPCWSTR result;
     std::wstring stemp;
-    HMODULE hm = LoadLibrary(L"Dll3.dll");
+    HMODULE hm = 0;
 
     std::string fileWay;
 
-    while(hm == NULL)
-    {
+    TCHAR fileDll[64];
+    HKEY hKey;
+    DWORD dwDisposition;
+    char strt[256];
+    TCHAR Reget[256] = { 0 };
+    DWORD RegetPath = sizeof(Reget);
+    TCHAR chekDll();
+    bool toCreate(TCHAR fileDll[64]);
 
-        printf("Ошибка загрузки Dll\n");
+resetChekWay:
 
-        resetWay:   
+        if (wayDllInReg) 
+        {
+        //Ишем папку
+        if (RegOpenKeyEx(HKEY_CURRENT_USER, L"Software\\lab", 0, KEY_ALL_ACCESS, &hKey) != ERROR_SUCCESS) {
+            cout << " Папка не найдена";
+        }
+        else
+        {
+            //Проверяем файл
+            if ((RegQueryValueEx(hKey, TEXT("Way to Dll"), NULL, NULL, (LPBYTE)&Reget, &RegetPath)) == ERROR_SUCCESS)
+            {
+                printf("Найденный путь к DLL");
+                printf("%s", Reget);
+                hm = LoadLibrary(Reget);
+
+                
+
+            }
+        }
+        RegCloseKey(hKey);
+        }
+        else 
+        {
+        //Записываем адрес и перезапускаем проверку
         printf("Укажите путь к файлу Dll\n");
         std::cin >> fileWay;
+        setWayToDll(fileWay);
+        goto resetChekWay;
+        }
 
-        stemp = s2ws(fileWay);
-        result = stemp.c_str();
-        hm = LoadLibrary(result);
 
-}
+        while (hm == NULL)
+        {
+
+            printf("Ошибка загрузки Dll\n");
+        resetWay:
+            printf("Укажите путь к файлу Dll\n");
+            std::cin >> fileWay;
+
+            stemp = s2ws(fileWay);
+            result = stemp.c_str();
+            hm = LoadLibrary(result);
+            setWayToDll(fileWay);
+        }
+    
     
         function fx = (function)GetProcAddress(hm, "func");
        
